@@ -6,6 +6,7 @@ function App() {
   const [latex, setLatex] = useState("");
   const [variables, setVariables] = useState([]);
   const [pdfUrl, setPdfUrl] = useState(null);
+  const [pdfName, setPdfName] = useState("output"); // Default PDF name
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
@@ -20,22 +21,20 @@ function App() {
 
   const updatedLatex = applyVariablesToLatex(latex, variables);
 
-  // ✅ HERE
   const handleCompile = async () => {
     const blob = await compileLatex(updatedLatex);
-
     if (!blob) return;
 
     const url = URL.createObjectURL(blob);
     setPdfUrl(url);
 
-    downloadPDF(blob);
+    downloadPDF(blob, pdfName); // Use user-provided PDF name
   };
 
   return (
     <div style={{ display: "flex", height: "100vh" }}>
       
-      {/* LEFT */}
+      {/* LEFT SIDE */}
       <div style={{ width: "40%", padding: "20px" }}>
         <input type="file" accept=".tex" onChange={handleFileUpload} />
 
@@ -44,12 +43,25 @@ function App() {
           setVariables={setVariables}
         />
 
+        {/* PDF name input */}
+        <div style={{ marginTop: "20px" }}>
+          <label>
+            PDF Name:{" "}
+            <input
+              type="text"
+              value={pdfName}
+              onChange={(e) => setPdfName(e.target.value)}
+              placeholder="Enter PDF name"
+            />
+          </label>
+        </div>
+
         <button onClick={handleCompile} style={{ marginTop: "20px" }}>
           Compile & Download PDF
         </button>
       </div>
 
-      {/* RIGHT */}
+      {/* RIGHT SIDE */}
       <div style={{ width: "60%", padding: "20px" }}>
         <h2>Preview</h2>
 
@@ -63,17 +75,15 @@ function App() {
           <pre>{updatedLatex}</pre>
         )}
       </div>
-
     </div>
   );
 }
 
 // ------ Change Variables ------
-
 function applyVariablesToLatex(latex, variables) {
   let updated = latex;
 
-  variables.forEach(v => {
+  variables.forEach((v) => {
     const regex = new RegExp(
       `\\\\newcommand\\{\\\\${v.name}\\}(\\[\\d+\\])?\\{[^}]*\\}`
     );
@@ -91,10 +101,8 @@ function applyVariablesToLatex(latex, variables) {
 async function compileLatex(latex) {
   const res = await fetch("http://localhost:3001/compile", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ latex })
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ latex }),
   });
 
   if (!res.ok) {
@@ -103,16 +111,16 @@ async function compileLatex(latex) {
   }
 
   const blob = await res.blob();
-  return blob; // 🔥 return blob instead of URL
+  return blob;
 }
 
 // ------ Download PDF ------
-function downloadPDF(blob) {
+function downloadPDF(blob, name) {
   const url = URL.createObjectURL(blob);
 
   const a = document.createElement("a");
   a.href = url;
-  a.download = "output.pdf";
+  a.download = name.endsWith(".pdf") ? name : `${name}.pdf`; // Ensure .pdf extension
   a.click();
 
   URL.revokeObjectURL(url);

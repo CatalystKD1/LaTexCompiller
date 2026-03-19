@@ -11,7 +11,7 @@ app.use(express.json({ limit: "5mb" }));
 
 const TEMP_DIR = path.join(__dirname, "temp");
 
-// ✅ YOUR PDFLATEX PATH (Windows-safe with quotes)
+// YOUR PDFLATEX PATH (Windows-safe with quotes)
 const PDFLATEX_PATH = `"C:\\Users\\fmccr\\AppData\\Local\\Programs\\MiKTeX\\miktex\\bin\\x64\\pdflatex.exe"`;
 
 // Ensure temp directory exists
@@ -34,7 +34,7 @@ app.post("/compile", (req, res) => {
     // Write LaTeX file
     fs.writeFileSync(texPath, latex);
 
-    // ✅ Use full path to pdflatex
+    // Use full path to pdflatex
     const command = `${PDFLATEX_PATH} -no-shell-escape -interaction=nonstopmode -output-directory="${TEMP_DIR}" "${texPath}"`;
 
     console.log("Running command:");
@@ -48,13 +48,13 @@ app.post("/compile", (req, res) => {
       console.log(stderr);
 
       if (error) {
-        console.error("❌ Compilation error");
+        console.error("Compilation error");
         return res.status(500).send("Compilation failed");
       }
 
       // Check if PDF exists
       if (!fs.existsSync(pdfPath)) {
-        console.error("❌ PDF not generated");
+        console.error("PDF not generated");
         return res.status(500).send("PDF not generated");
       }
 
@@ -82,11 +82,11 @@ app.post("/compile", (req, res) => {
     });
 
   } catch (err) {
-    console.error("❌ Server error:", err);
+    console.error("Server error:", err);
     res.status(500).send("Server error");
   }
 });
 
 app.listen(3001, () => {
-  console.log("🚀 Server running on http://localhost:3001");
+  console.log("Server running on http://localhost:3001");
 });

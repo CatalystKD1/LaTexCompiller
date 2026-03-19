@@ -5,6 +5,7 @@ import VariableEditor from "./components/VariableEditor";
 function App() {
   const [latex, setLatex] = useState("");
   const [variables, setVariables] = useState([]);
+  const [pdfUrl, setPdfUrl] = useState(null);
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
@@ -17,13 +18,24 @@ function App() {
     setVariables(parsed);
   };
 
-  // ✅ RIGHT HERE
   const updatedLatex = applyVariablesToLatex(latex, variables);
+
+  // ✅ HERE
+  const handleCompile = async () => {
+    const blob = await compileLatex(updatedLatex);
+
+    if (!blob) return;
+
+    const url = URL.createObjectURL(blob);
+    setPdfUrl(url);
+
+    downloadPDF(blob);
+  };
 
   return (
     <div style={{ display: "flex", height: "100vh" }}>
       
-      {/* LEFT SIDE */}
+      {/* LEFT */}
       <div style={{ width: "40%", padding: "20px" }}>
         <input type="file" accept=".tex" onChange={handleFileUpload} />
 
@@ -31,19 +43,32 @@ function App() {
           variables={variables}
           setVariables={setVariables}
         />
+
+        <button onClick={handleCompile} style={{ marginTop: "20px" }}>
+          Compile & Download PDF
+        </button>
       </div>
 
-      {/* RIGHT SIDE */}
+      {/* RIGHT */}
       <div style={{ width: "60%", padding: "20px" }}>
-        <h2>Updated LaTeX</h2>
+        <h2>Preview</h2>
 
-        {/* ✅ RIGHT HERE */}
-        <pre>{updatedLatex}</pre>
+        {pdfUrl ? (
+          <iframe
+            src={pdfUrl}
+            style={{ width: "100%", height: "80vh" }}
+            title="PDF Preview"
+          />
+        ) : (
+          <pre>{updatedLatex}</pre>
+        )}
       </div>
 
     </div>
   );
 }
+
+// ------ Change Variables ------
 
 function applyVariablesToLatex(latex, variables) {
   let updated = latex;
@@ -62,6 +87,7 @@ function applyVariablesToLatex(latex, variables) {
   return updated;
 }
 
+// ------ Compile the LaTex ------
 async function compileLatex(latex) {
   const res = await fetch("http://localhost:3001/compile", {
     method: "POST",
@@ -77,7 +103,19 @@ async function compileLatex(latex) {
   }
 
   const blob = await res.blob();
-  return URL.createObjectURL(blob);
+  return blob; // 🔥 return blob instead of URL
+}
+
+// ------ Download PDF ------
+function downloadPDF(blob) {
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "output.pdf";
+  a.click();
+
+  URL.revokeObjectURL(url);
 }
 
 export default App;

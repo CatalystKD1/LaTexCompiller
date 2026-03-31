@@ -141,10 +141,3 @@ npm start
 - Cloud deployment
 
 ---
-
-## Dependencies
-- Node.js
-- React
-- Express
-- LaTex Compiler (MikTex for windows)
-- Concurrency

@@ -12,7 +12,7 @@ app.use(express.json({ limit: "5mb" }));
 const TEMP_DIR = path.join(__dirname, "temp");
 
 // YOUR PDFLATEX PATH (Windows-safe with quotes)
-const PDFLATEX_PATH = `"C:\\Users\\fmccr\\AppData\\Local\\Programs\\MiKTeX\\miktex\\bin\\x64\\pdflatex.exe"`;
+const PDFLATEX_PATH = `"C:\\path\\to\\pdflatex.exe"`;
 
 // Ensure temp directory exists
 if (!fs.existsSync(TEMP_DIR)) {
